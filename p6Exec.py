@@ -106,8 +106,10 @@ def gotoFinder(labelName):
     lineNumber = 0
     for i in range(len(linelist)):
         tempLine = linelist[i].strip()
-        if tempLine[:len(labelName)] == labelName:
+        if tempLine.startswith(labelName + ":"):
             return lineNumber
+        # if tempLine[:len(labelName)] == labelName:
+        #     return lineNumber
         lineNumber+=1
 
 def labelLoops(line,currentLineNumber):
@@ -118,7 +120,7 @@ def labelLoops(line,currentLineNumber):
     #     GOTO Loop25
     # LAfter25: PRINT "quarters=" quarter
     
-    tokens = line.split()
+    tokens = line.strip().split()
     labelName = tokens[0]
     
     terminatingCondition = 0
@@ -126,20 +128,20 @@ def labelLoops(line,currentLineNumber):
     returnCount = 0
 
     if '>' in tokens:
-        while loopCondition:
-            if not greaterThan(tokens):
+        if not greaterThan(tokens):
+            while loopCondition and not greaterThan(tokens):
                 tempLine = linelist[currentLineNumber].strip()
                 returnCount+=1
                 if isAssign(tempLine):
                     evalAssign(tempLine)
                 if isGoto(tempLine):
                     jumpLineNumber = gotoFinder(labelName[:-1])
-                    currentLineNumber = jumpLineNumber
+                    currentLineNumber = jumpLineNumber-1
+                    returnCount = 1
                 currentLineNumber+=1
-                returnCount = 1
-                print(currentLineNumber)
-            else:
-                return gotoFinder(tokens[:-1]) - currentLineNumber
+               
+        else:
+            return gotoFinder(tokens[-1]) - currentLineNumber
     return returnCount
                 
 
@@ -164,7 +166,7 @@ def evalAssign(sentence):
 
 def now():
     for line in range(len(linelist)):
-        lines = linelist[line].strip()
+        lines = linelist[line]
         # print(line,lines)
         
         if isPrint(lines):
@@ -176,4 +178,3 @@ def now():
                 tokenizePrint("".join((lines.split(':'))[1]).strip())
             else:
                 line+=labelLoops(lines,line)
-        

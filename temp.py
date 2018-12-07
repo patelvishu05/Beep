@@ -2,6 +2,6 @@
 
 import re
 
-p = "'25'"
+p = "    ASSIGN quarter + quarter 1"
 
-print(int(p[1:-1]))
+print(p.startswith('ASSIGN'))
