@@ -32,6 +32,11 @@ def isAssign(sentence):
 def isGoto(sentence):
     if sentence[:4] == 'GOTO':
         return True
+
+def isLabel(sentence):
+    token = sentence.split(':')
+    if token[0].upper() in labelD:
+        return True
 #-----------------------------------------------------------------
 def addTokens(wordTokens):
     #format: ASSIGN dime + dime 1
@@ -47,6 +52,7 @@ def multiplyTokens(wordTokens):
 def greaterThan(wordTokens):
     #general format: Loop25: if > 25 working LAfter25
     #tokens-------->  0       1 2 3   4         5
+    # print("--->",wordTokens)
     try:
         if wordTokens[3].upper() in varValueD:
             number1 = int (varValueD[wordTokens[3].upper()])
@@ -84,7 +90,9 @@ def concatTokens(wordTokens):
 def subtractTokens(wordTokens):
     #format: ASSIGN working - working 25
     #tok---->   0     1     2    3     4
-    print()
+    diffToken = int(varValueD[wordTokens[3].upper()])
+    diffToken -= int(wordTokens[4])
+    varValueD[wordTokens[1].upper()] = str (diffToken)
 
 def greaterThanEqual(wordTokens):
     print()
@@ -93,6 +101,14 @@ def assignFromVar(wordTokens):
     #format: ASSIGN working money
     #tokens:    0       1   2
     varValueD[wordTokens[1].upper()] = varValueD[wordTokens[2].upper()]
+
+def gotoFinder(labelName):
+    lineNumber = 0
+    for i in range(len(linelist)):
+        tempLine = linelist[i].strip()
+        if tempLine[:len(labelName)] == labelName:
+            return lineNumber
+        lineNumber+=1
 
 def labelLoops(line,currentLineNumber):
     # Loop25: if > 25 working LAfter25
@@ -107,31 +123,23 @@ def labelLoops(line,currentLineNumber):
     
     terminatingCondition = 0
     loopCondition = True
-    returnCount = 1
+    returnCount = 0
 
     if '>' in tokens:
-            while loopCondition:
-                if greaterThan(tokens) and currentLineNumber < len(linelist):
-                    # print(currentLineNumber)
-                    tempLine = linelist[currentLineNumber].strip()
-                    returnCount+=1
-                    if isAssign(tempLine):
-                        evalAssign(tempLine)
-                    if isGoto(tempLine):
-                        currentLineNumber-= returnCount-1
-                        returnCount = 1
-                    currentLineNumber+=1
-                else:
-                    foundGOTO = 0
-                    while foundGOTO ==0:
-                        tempLine = linelist[currentLineNumber].strip()
-                        # print(tempLine)
-                        if isGoto(tempLine):
-                            foundGOTO = 1
-                            returnCount-=1
-                        returnCount+=1
-                        currentLineNumber+=1
-                    loopCondition = False
+        while loopCondition:
+            if not greaterThan(tokens):
+                tempLine = linelist[currentLineNumber].strip()
+                returnCount+=1
+                if isAssign(tempLine):
+                    evalAssign(tempLine)
+                if isGoto(tempLine):
+                    jumpLineNumber = gotoFinder(labelName[:-1])
+                    currentLineNumber = jumpLineNumber
+                currentLineNumber+=1
+                returnCount = 1
+                print(currentLineNumber)
+            else:
+                return gotoFinder(tokens[:-1]) - currentLineNumber
     return returnCount
                 
 
@@ -152,21 +160,20 @@ def evalAssign(sentence):
     elif (len(tokens)) == 3:
         assignFromVar(tokens)
 
-def isLabel(sentence):
-    token = sentence.split(':')
-    if token[0].upper() in labelD:
-        return True
+
 
 def now():
     for line in range(len(linelist)):
         lines = linelist[line].strip()
-        # if isVar(lines):
-        #     print()
+        # print(line,lines)
+        
         if isPrint(lines):
             tokenizePrint(lines)
         if isAssign(lines):
             evalAssign(lines)
         if isLabel(lines):
-            line+=labelLoops(lines,line)
-            print(linelist[line],line)
-    
+            if 'PRINT' in lines:
+                tokenizePrint("".join((lines.split(':'))[1]).strip())
+            else:
+                line+=labelLoops(lines,line)
+        

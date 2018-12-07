@@ -2,7 +2,6 @@
 
 import re
 
-d = [1,2,3,4,5,6]
+p = "'25'"
 
-for i in range(len(d)):
-    print(i)
+print(int(p[1:-1]))
