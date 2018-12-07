@@ -108,8 +108,6 @@ def gotoFinder(labelName):
         tempLine = linelist[i].strip()
         if tempLine.startswith(labelName + ":"):
             return lineNumber
-        # if tempLine[:len(labelName)] == labelName:
-        #     return lineNumber
         lineNumber+=1
 
 def labelLoops(line,currentLineNumber):
@@ -136,10 +134,10 @@ def labelLoops(line,currentLineNumber):
                     evalAssign(tempLine)
                 if isGoto(tempLine):
                     jumpLineNumber = gotoFinder(labelName[:-1])
-                    currentLineNumber = jumpLineNumber-1
+                    currentLineNumber = jumpLineNumber - 1
                     returnCount = 1
                 currentLineNumber+=1
-               
+
         else:
             return gotoFinder(tokens[-1]) - currentLineNumber
     return returnCount
@@ -162,19 +160,42 @@ def evalAssign(sentence):
     elif (len(tokens)) == 3:
         assignFromVar(tokens)
 
+def isIfStatement(sentence):
+    if sentence.strip()[:2] == 'IF':
+        return True
 
+def evalIfStatement(line,currentLineNumber):
+    tokens = line.strip().split()
+    loopCondition = True
+    returnCount = 0
+    if '>' in tokens:
+        while loopCondition and not greaterThan(tokens):
+            tempLine = linelist[currentLineNumber].strip()
+            currentLineNumber+=1
+            returnCount += 1
+            if isAssign(tempLine):
+                evalAssign(tempLine)
+            if isPrint(tempLine):
+                tokenizePrint(tempLine)
+            if isGoto(tempLine):
+                jumpLineNumber = gotoFinder(tempLine[5:])
+                return jumpLineNumber - currentLineNumber
+            
 
 def now():
     for line in range(len(linelist)):
         lines = linelist[line]
         # print(line,lines)
-        
+
         if isPrint(lines):
             tokenizePrint(lines)
         if isAssign(lines):
             evalAssign(lines)
         if isLabel(lines):
+            print(linelist[line])
             if 'PRINT' in lines:
                 tokenizePrint("".join((lines.split(':'))[1]).strip())
             else:
                 line+=labelLoops(lines,line)
+        if isIfStatement(lines):
+            line+=evalIfStatement(lines,line)

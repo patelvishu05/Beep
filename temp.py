@@ -2,6 +2,6 @@
 
 import re
 
-p = "    ASSIGN quarter + quarter 1"
+p = "GOTO afterIf"
 
-print(p.startswith('ASSIGN'))
+print(p[5:])
