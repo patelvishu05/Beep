@@ -2,9 +2,9 @@
 
 import re
 
-lines = 'afterIf: PRINT "Bot:...count=" count "tick=" tick "symbol=" symbol'
-line1 = 'pastlimit: PRINT "***tick...reached...limit:" tick'
+# line = 'afterIf: GOTO loop'
+line1 = 'GOTO afterIf'
+line = line1.split()
 
-for i in range (0,4,1):
-    print(i)
-    i+=2
+print(len(line))
+print(line[len(line)-1])

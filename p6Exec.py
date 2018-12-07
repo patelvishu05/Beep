@@ -30,7 +30,7 @@ def isAssign(sentence):
         return True
 
 def isGoto(sentence):
-    if sentence[:4] == 'GOTO':
+    if 'GOTO' in sentence:
         return True
 
 def isLabel(sentence):
@@ -95,7 +95,21 @@ def subtractTokens(wordTokens):
     varValueD[wordTokens[1].upper()] = str (diffToken)
 
 def greaterThanEqual(wordTokens):
-    print()
+    try:
+        if wordTokens[2].upper() in varValueD:
+            number1 = int (varValueD[wordTokens[2].upper()])
+        else:
+            number1 = int (wordTokens[2])
+    except:
+        raise InvalidValueType("'%s' is not numeric" % (number1)) 
+    try:
+        if wordTokens[3].upper() in varValueD:
+            number2 = int ( varValueD[wordTokens[3].upper()])
+        else:
+            number2 = int (wordTokens[3])
+    except:
+        raise InvalidValueType("'%s' is not numeric" % (number2)) 
+    return number1 >= number2
 
 def assignFromVar(wordTokens):
     #format: ASSIGN working money
@@ -105,8 +119,9 @@ def assignFromVar(wordTokens):
 def gotoFinder(labelName):
     lineNumber = 0
     for i in range(len(linelist)):
-        tempLine = linelist[i].strip()
-        if tempLine.startswith(labelName + ":"):
+        tempLine = linelist[i].strip().upper()
+        if tempLine.startswith(labelName.upper() + ":"):
+            # print(labelName.upper(),"<<<",lineNumber)
             return lineNumber
         lineNumber+=1
 
@@ -120,24 +135,51 @@ def labelLoops(line,currentLineNumber):
     
     tokens = line.strip().split()
     labelName = tokens[0]
-    
-    terminatingCondition = 0
+
     loopCondition = True
-    # returnCount = 0
 
     if '>' in tokens:
         if not greaterThan(tokens[len(tokens)-5:]):
-            while loopCondition and not greaterThan(tokens[len(tokens)-5:]):
-                tempLine = linelist[currentLineNumber].strip()
-                # returnCount+=1
-                if isAssign(tempLine):
-                    evalAssign(tempLine)
-                if isGoto(tempLine):
-                    jumpLineNumber = gotoFinder(labelName[:-1])
-                    currentLineNumber = jumpLineNumber - 1
-                    # returnCount = 1
-                currentLineNumber+=1
-
+            while loopCondition:
+                if not greaterThan(tokens[len(tokens)-5:]):
+                    tempLine = linelist[currentLineNumber].strip()
+                    if isAssign(tempLine):
+                        evalAssign(tempLine)
+                    if isPrint(tempLine):
+                        tokenizePrint(tempLine)
+                    if isGoto(tempLine):
+                        jumpLineNumber = gotoFinder(labelName[:-1])
+                        currentLineNumber = jumpLineNumber - 1
+                        
+                        return currentLineNumber
+                    if isIfStatement(tempLine):
+                        currentLineNumber = evalIfStatement(tempLine,currentLineNumber) - 1
+                        # return currentLineNumber
+                    currentLineNumber+=1
+                else:
+                    return gotoFinder(tokens[-1])
+        else:
+            return gotoFinder(tokens[-1])
+    if '>=' in tokens:
+        if not greaterThanEqual(tokens[len(tokens)-5:]):
+            while loopCondition:
+                if not greaterThanEqual(tokens[len(tokens)-5:]):
+                    tempLine = linelist[currentLineNumber].strip()
+                    if isAssign(tempLine):
+                        evalAssign(tempLine)
+                    if isGoto(tempLine):
+                        jumpLineNumber = gotoFinder(labelName[:-1])
+                        print(labelName[:-1],jumpLineNumber)
+                        currentLineNumber = jumpLineNumber - 1
+                        return currentLineNumber
+                    if isPrint(tempLine):
+                        tokenizePrint(tempLine)
+                    if isIfStatement(tempLine):
+                        currentLineNumber = evalIfStatement(tempLine,currentLineNumber) - 1
+                        # return currentLineNumber
+                    currentLineNumber+=1   
+                else:
+                    return gotoFinder(tokens[-1])
         else:
             return gotoFinder(tokens[-1]) #- currentLineNumber
     return currentLineNumber#returnCount
@@ -171,6 +213,7 @@ def evalIfStatement(line,currentLineNumber):
     if '>' in tokens:
         if not greaterThan(tokens[len(tokens)-5:]):
             while loopCondition:
+                # print(3,line)
                 if not greaterThan(tokens[len(tokens)-5:]):
                     tempLine = linelist[currentLineNumber].strip()
                     currentLineNumber+=1
@@ -180,10 +223,12 @@ def evalIfStatement(line,currentLineNumber):
                     if isPrint(tempLine):
                         tokenizePrint(tempLine)
                     if isGoto(tempLine):
-                        jumpLineNumber = gotoFinder(tempLine[5:])
+                        jumpLineNumber = gotoFinder((re.match(r'.*GOTO (.*)',tempLine)).group(1))
                         return jumpLineNumber 
+                else:
+                    return gotoFinder(tokens[-1])
         else:
-            return gotoFinder(tokens[-1] - currentLineNumber)
+            return gotoFinder(tokens[-1])
 
 def now():
     line = 0
@@ -198,7 +243,7 @@ def now():
             if 'PRINT' in lines:
                 tokenizePrint("".join((lines.split(':'))[1:]).strip())
             else:
-                line=labelLoops(lines,line) 
+                line=labelLoops(lines,line) - 1 
         if isIfStatement(lines):
             line = evalIfStatement(lines,line) - 1
         line+=1
