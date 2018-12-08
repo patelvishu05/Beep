@@ -14,9 +14,6 @@ from Executor import *
 
 #open file received from stdin for reading
 file = open(sys.argv[1],"r")
-if len(sys.argv) > 2:
-    if sys.argv[2] == '-v':
-        verbose = True
 print("BEEP source code in %s:" %(sys.argv[1]))
 
 #read the whole file in one shot
@@ -63,5 +60,11 @@ file.close()
 print('executing begins ...')
 # now()
 
+
 newExecutor = Executor(linelist,varValueD,varTypeD,labelD)
-newExecutor.startInterpreting()
+# newExecutor.startInterpreting()
+if len(sys.argv) > 2:
+    if sys.argv[2] == '-v':
+        newExecutor.startInterpreting(True)
+else:
+    newExecutor.startInterpreting(False)

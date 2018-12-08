@@ -1,8 +1,6 @@
 #!/usr/bin/python3
 from exceptionHandler import *
 
-verbose = False
-
 class Executor():
     linelist=[]
     varValueD={}
@@ -207,6 +205,7 @@ class Executor():
             self.assignFromVar(tokens)
     
     def evalIfStatement(self,line,currentLineNumber):
+        print(line,"<<<<")
         tokens = line.strip().split()
         loopCondition = True
         # returnCount = 0
@@ -237,6 +236,7 @@ class Executor():
         return self.greaterThanEqual(tokens)
 
     def labelLoops(self,line,currentLineNumber):
+        print(line)
         tokens = line.strip().split()
         labelName = tokens[0]
         loopCondition = True
@@ -272,7 +272,7 @@ class Executor():
             lineNumber+=1
 
 
-    def startInterpreting(self):
+    def startInterpreting(self,verbose):
         fileLines = self.linelist
         # print("execution begins...") TODO: add to driver
         line = 0
@@ -281,18 +281,22 @@ class Executor():
             actualLine = fileLines[line]
             if verbose:
                 print("executing line %d: %s" %(line,actualLine))
-            if self.isPrint(actualLine):
-                self.tokenizePrint(actualLine)
-            if self.isAssign(actualLine):
-                self.evalAssign(actualLine)
-            if self.isLabel(actualLine):
-                if 'PRINT' in actualLine:
-                    self.tokenizePrint("".join((actualLine.split(':'))[1:]).strip())
-                else:
-                    line = self.labelLoops(actualLine,line) - 1
-            if self.isIfStatement(actualLine):
-                line = self.evalIfStatement(actualLine,line) - 1
-            line+=1
+            try:
+                if self.isPrint(actualLine):
+                    self.tokenizePrint(actualLine)
+                if self.isAssign(actualLine):
+                    self.evalAssign(actualLine)
+                if self.isLabel(actualLine):
+                    if 'PRINT' in actualLine:
+                        self.tokenizePrint("".join((actualLine.split(':'))[1:]).strip())
+                    else:
+                        line = self.labelLoops(actualLine,line) - 1
+                if self.isIfStatement(actualLine):
+                    line = self.evalIfStatement(actualLine,line) - 1
+            except (InvalidValueType,TooFewOperands, LabelNotDefined, InvalidExpression, VarNotDefined) as e:
+                print("Error at line %d: %s"%(index+1, e.args[1]))
+                break
+            line+=1 
             
 
 
