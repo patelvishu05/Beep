@@ -4,6 +4,8 @@ import re
 from p5Dict import *
 from exceptionHandler import *
 
+verbose = False
+
 def tokenizePrint(line):
     matchObj = line.split()
     for item in matchObj:
@@ -15,7 +17,7 @@ def tokenizePrint(line):
                     print(varValueD[item.upper()][1:-1],end=" ")
                 else:
                     print(varValueD[item.upper()],end=" ")
-    print()
+    print("")
 #---------------------------------------------------------
 def isVar(sentence):
     if sentence[0:3] == 'VAR':
@@ -85,7 +87,8 @@ def concatTokens(wordTokens):
     else:
         a = str(wordTokens[3])
         b = str(wordTokens[4])
-    return a + b
+    # return a + b
+    varValueD[wordTokens[1].upper()] = a + b
 
 def subtractTokens(wordTokens):
     #format: ASSIGN working - working 25
@@ -234,7 +237,8 @@ def now():
     line = 0
     while line < len(linelist):
         lines = linelist[line]
-
+        if verbose:
+            print()
         if isPrint(lines):
             tokenizePrint(lines)
         if isAssign(lines):

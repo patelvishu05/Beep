@@ -2,7 +2,8 @@
 
 import sys
 from p5Dict import *
-from p6Exec import *
+# from p6Exec import *
+from Executor import *
 
 #------------------------------------------
 #Name:          Vishalkumar Patel
@@ -13,6 +14,9 @@ from p6Exec import *
 
 #open file received from stdin for reading
 file = open(sys.argv[1],"r")
+if len(sys.argv) > 2:
+    if sys.argv[2] == '-v':
+        verbose = True
 print("BEEP source code in %s:" %(sys.argv[1]))
 
 #read the whole file in one shot
@@ -57,4 +61,7 @@ file.close()
 # printLabels()
 
 print('executing begins ...')
-now()
+# now()
+
+newExecutor = Executor(linelist,varValueD,varTypeD,labelD)
+newExecutor.startInterpreting()

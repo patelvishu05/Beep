@@ -4,7 +4,8 @@ import re
 
 # line = 'afterIf: GOTO loop'
 line1 = 'GOTO afterIf'
-line = line1.split()
+line = '1'
 
-print(len(line))
-print(line[len(line)-1])
+
+if line.isdigit():
+    print('hi')
